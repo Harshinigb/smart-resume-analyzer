@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Job Matcher – Smart Resume Analyzer</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}"/>
+</head>
+<body>
+
+<div class="spinner-overlay" id="spinner">
+  <div class="spinner"></div>
+  <div class="spinner-text">🤖 AI is comparing your resume to the job…</div>
+</div>
+
+<!-- ── Sidebar ─────────────────────────── -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-mark">
+      <div class="logo-icon">⚡</div>
+      <div>
+        <div class="logo-text">Smart Resume</div>
+        <span class="logo-sub">AI-Powered Analyzer</span>
+      </div>
+    </div>
+  </div>
+  <nav>
+    <div class="nav-section">
+      <div class="nav-label">Menu</div>
+      <a th:href="@{/dashboard}" class="nav-item">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
+          <rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
+        </svg>
+        Dashboard
+      </a>
+      <a th:href="@{/resume/analyze}" class="nav-item">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+          <polyline points="14 2 14 8 20 8"/>
+        </svg>
+        Analyze Resume
+      </a>
+      <a th:href="@{/match}" class="nav-item active">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
+        </svg>
+        Job Matcher
+      </a>
+      <a th:href="@{/match/history}" class="nav-item">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <polyline points="12 8 12 12 14 14"/>
+          <path d="M3.05 11a9 9 0 1 0 .5-4.5"/><polyline points="3 3 3 7 7 7"/>
+        </svg>
+        Match History
+      </a>
+    </div>
+  </nav>
+  <div class="sidebar-footer">Smart Resume Analyzer v2.0</div>
+</aside>
+
+<!-- ── Main ────────────────────────────── -->
+<main class="main">
+  <div class="topbar">
+    <span class="topbar-title">Job Matcher</span>
+  </div>
+
+  <div class="page-content">
+
+    <nav class="breadcrumb fade-up">
+      <a th:href="@{/dashboard}">Dashboard</a>
+      <span class="sep">›</span>
+      <span class="current">Job Matcher</span>
+    </nav>
+
+    <div class="page-header fade-up">
+      <h2>🎯 Job Matcher</h2>
+      <p>Upload your resume on the left, paste the job description on the right. AI does the rest.</p>
+    </div>
+
+    <div th:if="${errorMsg}" class="alert alert-error fade-up">
+      ⚠️ <span th:text="${errorMsg}"></span>
+    </div>
+
+    <form th:action="@{/match}" method="post"
+          enctype="multipart/form-data" id="matchForm"
+          onsubmit="showSpinner()">
+
+      <div class="split-layout fade-up delay-1">
+
+        <!-- Left: Resume Upload -->
+        <div class="form-card">
+          <div class="split-header">
+            📄 Your Resume
+            <span class="split-badge badge badge-blue">Upload</span>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Resume File <span>*</span></label>
+            <div class="upload-zone" id="uploadZone">
+              <input type="file" name="resumeFile" id="resumeFile"
+                     accept=".pdf,.docx" onchange="onFileSelect(this)"/>
+              <div class="upload-icon">📎</div>
+              <div class="upload-title">Upload your resume</div>
+              <div class="upload-sub">PDF or DOCX — max 10MB</div>
+              <div class="upload-file-name" id="fileName"></div>
+            </div>
+          </div>
+
+          <div style="background:var(--primary-bg);border-radius:8px;padding:14px;margin-top:8px;">
+            <div style="font-size:0.78rem;font-weight:600;color:var(--primary);margin-bottom:6px;">
+              AI will extract from your resume:
+            </div>
+            <div style="font-size:0.77rem;color:var(--text2);line-height:1.8;">
+              ✅ Your skills &amp; technologies<br/>
+              ✅ Years of experience<br/>
+              ✅ Education &amp; certifications<br/>
+              ✅ Past projects &amp; achievements
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Job Description -->
+        <div class="form-card">
+          <div class="split-header">
+            💼 Job Description
+            <span class="split-badge badge badge-purple">Paste</span>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Paste Job Description <span>*</span></label>
+            <textarea name="jobDescription" class="form-textarea"
+                      style="min-height:260px;"
+                      placeholder="Paste the full job description here...&#10;&#10;Include: role title, responsibilities, required skills, qualifications, experience requirements, nice-to-haves, etc.&#10;&#10;The more complete the JD, the more accurate the match analysis."></textarea>
+            <span class="form-hint">
+              Copy the entire JD from LinkedIn, Naukri, company website, etc.
+            </span>
+          </div>
+
+          <div style="background:#f3eafd;border-radius:8px;padding:14px;margin-top:8px;">
+            <div style="font-size:0.78rem;font-weight:600;color:var(--secondary);margin-bottom:6px;">
+              AI will analyze from the JD:
+            </div>
+            <div style="font-size:0.77rem;color:var(--text2);line-height:1.8;">
+              ✅ Required vs nice-to-have skills<br/>
+              ✅ Experience requirements<br/>
+              ✅ Tech stack expected<br/>
+              ✅ Soft skills &amp; cultural fit
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Submit -->
+      <div style="text-align:center;margin-top:22px;" class="fade-up delay-2">
+        <button type="submit" class="btn btn-primary btn-lg" id="submitBtn">
+          🚀 Calculate Match Now
+        </button>
+        <div style="font-size:0.78rem;color:var(--text3);margin-top:8px;">
+          Analysis takes 10–20 seconds
+        </div>
+      </div>
+
+    </form>
+  </div>
+</main>
+
+<script>
+  function onFileSelect(input) {
+    const zone = document.getElementById('uploadZone');
+    const label = document.getElementById('fileName');
+    if (input.files && input.files[0]) {
+      label.textContent = '✅ ' + input.files[0].name;
+      label.style.display = 'block';
+      zone.style.borderColor = 'var(--primary)';
+      zone.style.background  = 'var(--primary-bg)';
+    }
+  }
+
+  function showSpinner() {
+    const file = document.getElementById('resumeFile').files[0];
+    const jd   = document.querySelector('[name="jobDescription"]').value.trim();
+    if (!file || !jd) return;
+    document.getElementById('spinner').classList.add('active');
+    document.getElementById('submitBtn').disabled = true;
+  }
+
+  const zone = document.getElementById('uploadZone');
+  zone.addEventListener('dragover',  e => { e.preventDefault(); zone.classList.add('dragover'); });
+  zone.addEventListener('dragleave', () => zone.classList.remove('dragover'));
+  zone.addEventListener('drop', e => {
+    e.preventDefault(); zone.classList.remove('dragover');
+    const input = document.getElementById('resumeFile');
+    input.files = e.dataTransfer.files;
+    onFileSelect(input);
+  });
+</script>
+
+</body>
+</html>

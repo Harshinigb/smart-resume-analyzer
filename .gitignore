@@ -1,0 +1,25 @@
+# Maven build output
+target/
+
+# STS4 / Eclipse files
+.classpath
+.project
+.settings/
+.factorypath
+
+# Spring Boot JAR
+*.jar
+*.war
+
+# IMPORTANT — never push API keys or passwords
+application.properties
+application-railway.properties
+application-render.properties
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/

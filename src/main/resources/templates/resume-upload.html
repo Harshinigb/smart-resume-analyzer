@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Analyze Resume – Smart Resume Analyzer</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}"/>
+</head>
+<body>
+
+<!-- Spinner overlay (shown during AI analysis) -->
+<div class="spinner-overlay" id="spinner">
+  <div class="spinner"></div>
+  <div class="spinner-text">🤖 AI is analyzing your resume…</div>
+</div>
+
+<!-- ── Sidebar ─────────────────────────── -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-mark">
+      <div class="logo-icon">⚡</div>
+      <div>
+        <div class="logo-text">Smart Resume</div>
+        <span class="logo-sub">AI-Powered Analyzer</span>
+      </div>
+    </div>
+  </div>
+  <nav>
+    <div class="nav-section">
+      <div class="nav-label">Menu</div>
+      <a th:href="@{/dashboard}" class="nav-item">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
+          <rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
+        </svg>
+        Dashboard
+      </a>
+      <a th:href="@{/resume/analyze}" class="nav-item active">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+          <polyline points="14 2 14 8 20 8"/>
+        </svg>
+        Analyze Resume
+      </a>
+      <a th:href="@{/match}" class="nav-item">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
+        </svg>
+        Job Matcher
+      </a>
+      <a th:href="@{/resume/history}" class="nav-item">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <polyline points="12 8 12 12 14 14"/>
+          <path d="M3.05 11a9 9 0 1 0 .5-4.5"/><polyline points="3 3 3 7 7 7"/>
+        </svg>
+        History
+      </a>
+    </div>
+  </nav>
+  <div class="sidebar-footer">Smart Resume Analyzer v2.0</div>
+</aside>
+
+<!-- ── Main ────────────────────────────── -->
+<main class="main">
+  <div class="topbar">
+    <span class="topbar-title">Analyze Resume</span>
+  </div>
+
+  <div class="page-content">
+
+    <nav class="breadcrumb fade-up">
+      <a th:href="@{/dashboard}">Dashboard</a>
+      <span class="sep">›</span>
+      <span class="current">Analyze Resume</span>
+    </nav>
+
+    <div class="page-header fade-up">
+      <h2>📄 Analyze Your Resume</h2>
+      <p>Upload your resume and our AI will give you an ATS score, detailed suggestions, and skill recommendations.</p>
+    </div>
+
+    <!-- Error message -->
+    <div th:if="${errorMsg}" class="alert alert-error fade-up">
+      ⚠️ <span th:text="${errorMsg}"></span>
+    </div>
+
+    <form th:action="@{/resume/analyze}" method="post"
+          enctype="multipart/form-data" id="analyzeForm"
+          onsubmit="showSpinner()">
+
+      <div class="form-card fade-up delay-1">
+
+        <!-- File Upload Zone -->
+        <div class="form-group">
+          <label class="form-label">Upload Resume <span>*</span></label>
+          <div class="upload-zone" id="uploadZone">
+            <input type="file" name="resumeFile" id="resumeFile"
+                   accept=".pdf,.docx" onchange="onFileSelect(this)"/>
+            <div class="upload-icon">📎</div>
+            <div class="upload-title">Drag & drop your resume here</div>
+            <div class="upload-sub">Supports PDF and DOCX — max 10MB</div>
+            <div class="upload-file-name" id="fileName">No file selected</div>
+          </div>
+        </div>
+
+        <!-- Interests -->
+        <div class="form-group">
+          <label class="form-label">Your Interests / Target Role</label>
+          <input type="text" name="interests" class="form-input"
+                 placeholder="e.g. Backend Developer, Data Science, DevOps, Full Stack Java…"/>
+          <span class="form-hint">
+            Tell the AI what roles you're targeting — it will tailor skill recommendations accordingly.
+          </span>
+        </div>
+
+        <!-- What you'll get -->
+        <div style="background:var(--primary-bg);border-radius:10px;padding:16px;margin-bottom:20px;">
+          <div style="font-weight:600;color:var(--primary);font-size:0.85rem;margin-bottom:10px;">
+            🤖 What Gemini AI will analyze:
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+            <div style="font-size:0.8rem;color:var(--text2);">✅ ATS Score (0–100)</div>
+            <div style="font-size:0.8rem;color:var(--text2);">✅ Skills detected</div>
+            <div style="font-size:0.8rem;color:var(--text2);">✅ Improvement suggestions</div>
+            <div style="font-size:0.8rem;color:var(--text2);">✅ Recommended skills to learn</div>
+            <div style="font-size:0.8rem;color:var(--text2);">✅ Overall resume summary</div>
+            <div style="font-size:0.8rem;color:var(--text2);">✅ Tailored career advice</div>
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-lg" id="submitBtn">
+          🚀 Analyze My Resume
+        </button>
+
+      </div>
+    </form>
+
+  </div>
+</main>
+
+<script>
+  function onFileSelect(input) {
+    const zone = document.getElementById('uploadZone');
+    const label = document.getElementById('fileName');
+    if (input.files && input.files[0]) {
+      label.textContent = '✅ ' + input.files[0].name;
+      label.style.display = 'block';
+      zone.style.borderColor = 'var(--primary)';
+      zone.style.background  = 'var(--primary-bg)';
+    }
+  }
+
+  function showSpinner() {
+    const file = document.getElementById('resumeFile').files[0];
+    if (!file) return;
+    document.getElementById('spinner').classList.add('active');
+    document.getElementById('submitBtn').disabled = true;
+  }
+
+  // Drag and drop styling
+  const zone = document.getElementById('uploadZone');
+  zone.addEventListener('dragover',  e => { e.preventDefault(); zone.classList.add('dragover'); });
+  zone.addEventListener('dragleave', () => zone.classList.remove('dragover'));
+  zone.addEventListener('drop', e => {
+    e.preventDefault();
+    zone.classList.remove('dragover');
+    const input = document.getElementById('resumeFile');
+    input.files = e.dataTransfer.files;
+    onFileSelect(input);
+  });
+</script>
+
+</body>
+</html>

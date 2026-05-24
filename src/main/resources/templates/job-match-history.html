@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Match History – Smart Resume Analyzer</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}"/>
+</head>
+<body>
+
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-mark">
+      <div class="logo-icon">⚡</div>
+      <div>
+        <div class="logo-text">Smart Resume</div>
+        <span class="logo-sub">AI-Powered Analyzer</span>
+      </div>
+    </div>
+  </div>
+  <nav>
+    <div class="nav-section">
+      <div class="nav-label">Menu</div>
+      <a th:href="@{/dashboard}" class="nav-item">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
+          <rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
+        </svg>
+        Dashboard
+      </a>
+      <a th:href="@{/resume/analyze}" class="nav-item">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+          <polyline points="14 2 14 8 20 8"/>
+        </svg>
+        Analyze Resume
+      </a>
+      <a th:href="@{/match}" class="nav-item">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
+        </svg>
+        Job Matcher
+      </a>
+      <a th:href="@{/match/history}" class="nav-item active">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <polyline points="12 8 12 12 14 14"/>
+          <path d="M3.05 11a9 9 0 1 0 .5-4.5"/><polyline points="3 3 3 7 7 7"/>
+        </svg>
+        Match History
+      </a>
+    </div>
+  </nav>
+  <div class="sidebar-footer">Smart Resume Analyzer v2.0</div>
+</aside>
+
+<main class="main">
+  <div class="topbar">
+    <span class="topbar-title">Job Match History</span>
+    <div class="topbar-right">
+      <a th:href="@{/match}" class="btn btn-primary btn-sm">+ New Match</a>
+    </div>
+  </div>
+
+  <div class="page-content">
+
+    <div class="page-header fade-up">
+      <h2>🎯 Job Match History</h2>
+      <p>All past job match results — click View to see full details.</p>
+    </div>
+
+    <!-- Empty state -->
+    <div class="table-card fade-up" th:if="${#lists.isEmpty(matches)}">
+      <div class="empty-state">
+        <div class="empty-icon">🎯</div>
+        <div class="empty-title">No matches yet</div>
+        <div class="empty-sub">Run your first job match to see results here</div>
+        <a th:href="@{/match}" class="btn btn-primary" style="margin-top:16px;">
+          Try Job Matcher
+        </a>
+      </div>
+    </div>
+
+    <!-- Table -->
+    <div class="table-card fade-up" th:if="${not #lists.isEmpty(matches)}">
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Resume File</th>
+              <th>Match %</th>
+              <th>Rating</th>
+              <th>Missing Skills</th>
+              <th>Date</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr th:each="m, i : ${matches}">
+              <td>
+                <span class="badge badge-gray" th:text="${i.count}">1</span>
+              </td>
+              <td>
+                <div style="display:flex;align-items:center;gap:8px;">
+                  <span style="font-size:16px;">📄</span>
+                  <span th:text="${m.resumeFileName}">resume.pdf</span>
+                </div>
+              </td>
+              <td>
+                <div style="display:flex;align-items:center;gap:8px;">
+                  <div class="progress-bar" style="width:80px;">
+                    <div th:class="${m.matchPercentage >= 80} ? 'progress-fill green' : (${m.matchPercentage >= 60} ? 'progress-fill blue' : (${m.matchPercentage >= 40} ? 'progress-fill orange' : 'progress-fill red'))"
+                         th:style="'width:' + ${m.matchPercentage} + '%'"></div>
+                  </div>
+                  <span style="font-weight:600;font-size:0.85rem;"
+                        th:text="${m.matchPercentage} + '%'">0%</span>
+                </div>
+              </td>
+              <td>
+                <span th:class="${m.matchPercentage >= 80} ? 'badge badge-green' : (${m.matchPercentage >= 60} ? 'badge badge-blue' : (${m.matchPercentage >= 40} ? 'badge badge-orange' : 'badge badge-red'))"
+                      th:text="${m.matchPercentage >= 80} ? 'Strong Match' : (${m.matchPercentage >= 60} ? 'Good Match' : (${m.matchPercentage >= 40} ? 'Partial Match' : 'Low Match'))">—</span>
+              </td>
+              <td>
+                <div th:if="${m.missingSkills != null and not #strings.isEmpty(m.missingSkills)}"
+                     class="skill-list">
+                  <span th:each="sk : ${#strings.arraySplit(m.missingSkills, ',')}"
+                        class="skill-tag missing"
+                        style="font-size:0.68rem;padding:2px 7px;"
+                        th:text="${#strings.trim(sk)}"></span>
+                </div>
+                <span th:if="${m.missingSkills == null or #strings.isEmpty(m.missingSkills)}"
+                      style="color:var(--text3);">—</span>
+              </td>
+              <td th:text="${#temporals.format(m.matchedAt, 'dd MMM yyyy, HH:mm')}">—</td>
+              <td>
+                <a th:href="@{/match/result/{id}(id=${m.id})}"
+                   class="btn btn-outline btn-sm">View →</a>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+</body>
+</html>

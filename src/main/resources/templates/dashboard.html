@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Smart Resume Analyzer</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}"/>
+</head>
+<body>
+
+<!-- ── Sidebar ─────────────────────────── -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-mark">
+      <div class="logo-icon">⚡</div>
+      <div>
+        <div class="logo-text">Smart Resume</div>
+        <span class="logo-sub">AI-Powered Analyzer</span>
+      </div>
+    </div>
+  </div>
+  <nav>
+    <div class="nav-section">
+      <div class="nav-label">Menu</div>
+      <a th:href="@{/dashboard}" class="nav-item active">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
+          <rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
+        </svg>
+        Dashboard
+      </a>
+      <a th:href="@{/resume/analyze}" class="nav-item">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+          <polyline points="14 2 14 8 20 8"/>
+          <line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>
+          <polyline points="10 9 9 9 8 9"/>
+        </svg>
+        Analyze Resume
+      </a>
+      <a th:href="@{/match}" class="nav-item">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
+        </svg>
+        Job Matcher
+      </a>
+      <a th:href="@{/resume/history}" class="nav-item">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <polyline points="12 8 12 12 14 14"/>
+          <path d="M3.05 11a9 9 0 1 0 .5-4.5"/>
+          <polyline points="3 3 3 7 7 7"/>
+        </svg>
+        History
+      </a>
+    </div>
+  </nav>
+  <div class="sidebar-footer">Smart Resume Analyzer v2.0</div>
+</aside>
+
+<!-- ── Main ────────────────────────────── -->
+<main class="main">
+  <div class="topbar">
+    <span class="topbar-title">Dashboard</span>
+    <div class="topbar-right">
+      <a th:href="@{/resume/analyze}" class="btn btn-primary btn-sm">
+        + Analyze Resume
+      </a>
+    </div>
+  </div>
+
+  <div class="page-content">
+
+    <!-- Welcome -->
+    <div class="page-header fade-up">
+      <h2>Welcome to Smart Resume Analyzer 👋</h2>
+      <p>Use AI to analyze your resume or check how well you match a job description.</p>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-grid fade-up delay-1">
+      <div class="stat-card blue">
+        <div class="stat-icon">📄</div>
+        <div class="stat-value" th:text="${totalAnalyses}">0</div>
+        <div class="stat-label">Resumes Analyzed</div>
+      </div>
+      <div class="stat-card green">
+        <div class="stat-icon">🎯</div>
+        <div class="stat-value" th:text="${totalMatches}">0</div>
+        <div class="stat-label">Job Matches Run</div>
+      </div>
+      <div class="stat-card orange">
+        <div class="stat-icon">🤖</div>
+        <div class="stat-value">AI</div>
+        <div class="stat-label">Powered by Gemini</div>
+      </div>
+      <div class="stat-card purple">
+        <div class="stat-icon">📊</div>
+        <div class="stat-value">ATS</div>
+        <div class="stat-label">Score Analysis</div>
+      </div>
+    </div>
+
+    <!-- Hero Feature Cards -->
+    <div class="hero-grid fade-up delay-2">
+
+      <a th:href="@{/resume/analyze}" class="hero-card blue">
+        <div class="hero-deco"></div>
+        <div class="hero-deco2"></div>
+        <div class="hero-icon">📄</div>
+        <div>
+          <h3>Analyze Your Resume</h3>
+          <p>Upload your PDF or DOCX resume and get an instant ATS score, improvement suggestions, and personalized skill recommendations powered by Gemini AI.</p>
+        </div>
+        <div class="hero-btn">
+          Start Analysis →
+        </div>
+      </a>
+
+      <a th:href="@{/match}" class="hero-card purple">
+        <div class="hero-deco"></div>
+        <div class="hero-deco2"></div>
+        <div class="hero-icon">🎯</div>
+        <div>
+          <h3>Job Matcher</h3>
+          <p>Upload your resume and paste a job description. AI will calculate your match percentage, identify skill gaps, and tell you exactly what to add before applying.</p>
+        </div>
+        <div class="hero-btn">
+          Match Now →
+        </div>
+      </a>
+
+    </div>
+
+    <!-- Recent Analyses -->
+    <div th:if="${not #lists.isEmpty(recentResumes)}">
+      <div class="section-header fade-up">
+        <div>
+          <div class="section-title">Recent Resume Analyses</div>
+          <div class="section-sub">Your last 5 analyzed resumes</div>
+        </div>
+        <a th:href="@{/resume/history}" class="btn btn-ghost btn-sm">View all →</a>
+      </div>
+      <div class="table-card fade-up delay-3">
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>File Name</th>
+                <th>ATS Score</th>
+                <th>Interests</th>
+                <th>Date</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr th:each="r : ${recentResumes}">
+                <td th:text="${r.fileName}">resume.pdf</td>
+                <td>
+                  <span th:class="${r.atsScore >= 80} ? 'badge badge-green' : (${r.atsScore >= 60} ? 'badge badge-blue' : (${r.atsScore >= 40} ? 'badge badge-orange' : 'badge badge-red'))"
+                        th:text="${r.atsScore} + '/100'">0/100</span>
+                </td>
+                <td th:text="${r.interests != null ? r.interests : '—'}">—</td>
+                <td th:text="${#temporals.format(r.uploadedAt, 'dd MMM yyyy')}">—</td>
+                <td>
+                  <a th:href="@{/resume/result/{id}(id=${r.id})}"
+                     class="btn btn-outline btn-sm">View</a>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recent Matches -->
+    <div th:if="${not #lists.isEmpty(recentMatches)}" style="margin-top:24px;">
+      <div class="section-header fade-up">
+        <div>
+          <div class="section-title">Recent Job Matches</div>
+          <div class="section-sub">Your last 5 job match results</div>
+        </div>
+        <a th:href="@{/match/history}" class="btn btn-ghost btn-sm">View all →</a>
+      </div>
+      <div class="table-card fade-up">
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Resume</th>
+                <th>Match %</th>
+                <th>Date</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr th:each="m : ${recentMatches}">
+                <td th:text="${m.resumeFileName}">resume.pdf</td>
+                <td>
+                  <span th:class="${m.matchPercentage >= 80} ? 'badge badge-green' : (${m.matchPercentage >= 60} ? 'badge badge-blue' : (${m.matchPercentage >= 40} ? 'badge badge-orange' : 'badge badge-red'))"
+                        th:text="${m.matchPercentage} + '%'">0%</span>
+                </td>
+                <td th:text="${#temporals.format(m.matchedAt, 'dd MMM yyyy')}">—</td>
+                <td>
+                  <a th:href="@{/match/result/{id}(id=${m.id})}"
+                     class="btn btn-outline btn-sm">View</a>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</main>
+</body>
+</html>

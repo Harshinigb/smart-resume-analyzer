@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Resume Analysis Result – Smart Resume Analyzer</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}"/>
+</head>
+<body>
+
+<!-- ── Sidebar ─────────────────────────── -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-mark">
+      <div class="logo-icon">⚡</div>
+      <div>
+        <div class="logo-text">Smart Resume</div>
+        <span class="logo-sub">AI-Powered Analyzer</span>
+      </div>
+    </div>
+  </div>
+  <nav>
+    <div class="nav-section">
+      <div class="nav-label">Menu</div>
+      <a th:href="@{/dashboard}" class="nav-item">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
+          <rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
+        </svg>
+        Dashboard
+      </a>
+      <a th:href="@{/resume/analyze}" class="nav-item active">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+          <polyline points="14 2 14 8 20 8"/>
+        </svg>
+        Analyze Resume
+      </a>
+      <a th:href="@{/match}" class="nav-item">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
+        </svg>
+        Job Matcher
+      </a>
+      <a th:href="@{/resume/history}" class="nav-item">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <polyline points="12 8 12 12 14 14"/>
+          <path d="M3.05 11a9 9 0 1 0 .5-4.5"/><polyline points="3 3 3 7 7 7"/>
+        </svg>
+        History
+      </a>
+    </div>
+  </nav>
+  <div class="sidebar-footer">Smart Resume Analyzer v2.0</div>
+</aside>
+
+<!-- ── Main ────────────────────────────── -->
+<main class="main">
+  <div class="topbar">
+    <span class="topbar-title">Analysis Result</span>
+    <div class="topbar-right">
+      <a th:href="@{/resume/analyze}" class="btn btn-outline btn-sm">+ Analyze Another</a>
+      <a th:href="@{/match}" class="btn btn-primary btn-sm">🎯 Try Job Matcher</a>
+    </div>
+  </div>
+
+  <div class="page-content">
+
+    <nav class="breadcrumb fade-up">
+      <a th:href="@{/dashboard}">Dashboard</a>
+      <span class="sep">›</span>
+      <a th:href="@{/resume/analyze}">Analyze Resume</a>
+      <span class="sep">›</span>
+      <span class="current">Result</span>
+    </nav>
+
+    <!-- Score Header Card -->
+    <div class="result-header fade-up">
+      <div th:class="'score-circle ' + ${analysis.scoreClass}">
+        <span class="score-num" th:text="${analysis.atsScore}">0</span>
+        <span class="score-pct">/100</span>
+      </div>
+      <div class="score-info">
+        <div th:class="${analysis.atsScore >= 80} ? 'label-badge badge badge-green' : (${analysis.atsScore >= 60} ? 'label-badge badge badge-blue' : (${analysis.atsScore >= 40} ? 'label-badge badge badge-orange' : 'label-badge badge badge-red'))"
+             th:text="${analysis.scoreLabel}">Score</div>
+        <h2>ATS Score for <span th:text="${analysis.fileName}">resume.pdf</span></h2>
+        <p th:text="${analysis.summary}">Overall summary from AI.</p>
+      </div>
+
+      <!-- Score Progress -->
+      <div style="margin-left:auto;min-width:180px;">
+        <div class="progress-bar-label">
+          <span>ATS Score</span>
+          <span th:text="${analysis.atsScore} + '%'">0%</span>
+        </div>
+        <div class="progress-bar">
+          <div th:class="${analysis.atsScore >= 80} ? 'progress-fill green' : (${analysis.atsScore >= 60} ? 'progress-fill blue' : (${analysis.atsScore >= 40} ? 'progress-fill orange' : 'progress-fill red'))"
+               th:style="'width:' + ${analysis.atsScore} + '%'"></div>
+        </div>
+        <div style="font-size:0.72rem;color:var(--text3);margin-top:6px;">
+          Powered by Gemini AI
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Result Grid -->
+    <div class="result-grid fade-up delay-1">
+
+      <!-- Suggestions -->
+      <div class="result-card">
+        <div class="result-card-title">
+          <span class="rc-icon">💡</span>
+          Improvement Suggestions
+        </div>
+        <div class="suggestion-list">
+          <div th:if="${#lists.isEmpty(analysis.suggestions)}"
+               style="color:var(--text3);font-size:0.85rem;">No suggestions available.</div>
+          <div class="suggestion-item"
+               th:each="suggestion, i : ${analysis.suggestions}">
+            <div class="suggestion-num" th:text="${i.count}">1</div>
+            <span th:text="${suggestion}">Suggestion text</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Detected Skills -->
+      <div class="result-card">
+        <div class="result-card-title">
+          <span class="rc-icon">🔍</span>
+          Skills Detected in Your Resume
+        </div>
+        <div th:if="${#lists.isEmpty(analysis.detectedSkills)}"
+             style="color:var(--text3);font-size:0.85rem;margin-bottom:16px;">
+          No skills explicitly detected.
+        </div>
+        <div class="skill-list" th:if="${not #lists.isEmpty(analysis.detectedSkills)}">
+          <span class="skill-tag detected"
+                th:each="skill : ${analysis.detectedSkills}"
+                th:text="${skill}">Skill</span>
+        </div>
+
+        <div style="height:1px;background:var(--border);margin:16px 0;"></div>
+
+        <div class="result-card-title" style="margin-bottom:12px;">
+          <span class="rc-icon">🚀</span>
+          Recommended Skills to Learn
+        </div>
+        <div th:if="${#lists.isEmpty(analysis.recommendedSkills)}"
+             style="color:var(--text3);font-size:0.85rem;">
+          No recommendations available.
+        </div>
+        <div class="skill-list" th:if="${not #lists.isEmpty(analysis.recommendedSkills)}">
+          <span class="skill-tag recommended"
+                th:each="skill : ${analysis.recommendedSkills}"
+                th:text="${skill}">Skill</span>
+        </div>
+
+        <div th:if="${analysis.interests != null and not #strings.isEmpty(analysis.interests)}"
+             style="margin-top:16px;padding:10px 12px;background:var(--bg3);border-radius:8px;">
+          <span style="font-size:0.75rem;color:var(--text3);">Target interests: </span>
+          <span style="font-size:0.8rem;color:var(--text2);font-weight:500;"
+                th:text="${analysis.interests}"></span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- CTA -->
+    <div class="result-card fade-up delay-2"
+         style="background:linear-gradient(135deg,#f3eafd,#eef1fd);border-color:#d8b4fe;text-align:center;padding:28px;">
+      <div style="font-size:28px;margin-bottom:10px;">🎯</div>
+      <div style="font-family:var(--font-head);font-size:1rem;font-weight:600;color:var(--text);margin-bottom:6px;">
+        See how well you match a specific job?
+      </div>
+      <div style="font-size:0.85rem;color:var(--text2);margin-bottom:16px;">
+        Use the Job Matcher to compare your resume against any job description and get a match percentage.
+      </div>
+      <a th:href="@{/match}" class="btn btn-primary">Try Job Matcher →</a>
+    </div>
+
+  </div>
+</main>
+
+</body>
+</html>
